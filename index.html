@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Sistema de gestão para oficinas especializadas em manutenção de faróis.">
+  <title>Farol em Dia</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">✦</span>
+        <span class="brand-copy"><strong>Farol em Dia</strong><small>Gestão da oficina</small></span>
+      </div>
+
+      <nav class="main-nav" aria-label="Navegação principal">
+        <button class="nav-item is-active" type="button" data-view="dashboard" aria-current="page">
+          <span class="nav-icon" aria-hidden="true">⌂</span><span>Visão geral</span>
+        </button>
+        <button class="nav-item" type="button" data-view="ordens">
+          <span class="nav-icon" aria-hidden="true">OS</span><span>Ordens de serviço</span>
+        </button>
+        <button class="nav-item" type="button" data-view="clientes">
+          <span class="nav-icon" aria-hidden="true">C</span><span>Clientes</span>
+        </button>
+        <button class="nav-item" type="button" data-view="veiculos">
+          <span class="nav-icon" aria-hidden="true">V</span><span>Veículos</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <span class="user-avatar">DS</span>
+        <span><strong>Daniel Silva</strong><small>Atendente</small></span>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <header class="topbar">
+        <label class="search-field">
+          <span aria-hidden="true">⌕</span>
+          <input id="global-search" type="search" placeholder="Buscar cliente, placa ou OS...">
+        </label>
+        <div id="api-indicator" class="api-indicator" aria-live="polite">
+          <span class="api-dot"></span><span>Conectando...</span>
+        </div>
+      </header>
+
+      <section id="view-dashboard" class="view is-active" aria-labelledby="dashboard-title">
+        <div class="page-heading">
+          <div><p class="eyebrow">QUINTA-FEIRA, 20 DE AGOSTO</p><h1 id="dashboard-title">Bom dia, Daniel</h1><p>Veja o movimento e as prioridades da oficina.</p></div>
+          <button class="button button-primary" type="button" data-open-dialog="ordem-dialog"><span aria-hidden="true">＋</span> Nova ordem</button>
+        </div>
+        <div id="stats-grid" class="stats-grid" aria-live="polite"></div>
+        <div class="dashboard-grid">
+          <article class="panel panel-wide">
+            <div class="panel-heading"><div><span class="section-kicker">ATENDIMENTO</span><h2>Serviços recentes</h2></div><button class="text-button" type="button" data-view="ordens">Ver todas</button></div>
+            <div class="table-scroll"><table><thead><tr><th>OS / cliente</th><th>Veículo</th><th>Serviço</th><th>Status</th></tr></thead><tbody id="recent-orders"></tbody></table></div>
+          </article>
+          <article class="panel">
+            <div class="panel-heading"><div><span class="section-kicker">FLUXO DE HOJE</span><h2>Andamento</h2></div><span id="orders-total" class="muted-label">0 ordens</span></div>
+            <div id="flow-list" class="flow-list"></div>
+          </article>
+        </div>
+      </section>
+
+      <section id="view-ordens" class="view" aria-labelledby="ordens-title">
+        <div class="page-heading"><div><p class="eyebrow">OPERAÇÃO</p><h1 id="ordens-title">Ordens de serviço</h1><p>Acompanhe cada farol da entrada até a entrega.</p></div><button class="button button-primary" type="button" data-open-dialog="ordem-dialog"><span aria-hidden="true">＋</span> Nova ordem</button></div>
+        <div class="filter-row" id="order-filters" aria-label="Filtrar ordens">
+          <button class="filter-chip is-active" type="button" data-status="">Todas</button>
+          <button class="filter-chip" type="button" data-status="recebida">Recebidas</button>
+          <button class="filter-chip" type="button" data-status="em_servico">Em serviço</button>
+          <button class="filter-chip" type="button" data-status="aguardando_peca">Aguardando peça</button>
+          <button class="filter-chip" type="button" data-status="pronta">Prontas</button>
+          <button class="filter-chip" type="button" data-status="entregue">Entregues</button>
+        </div>
+        <article class="panel">
+          <div class="table-scroll"><table class="orders-table"><thead><tr><th>Ordem</th><th>Cliente</th><th>Veículo</th><th>Farol / serviço</th><th>Previsão</th><th>Status</th><th><span class="sr-only">Ações</span></th></tr></thead><tbody id="orders-table-body"></tbody></table></div>
+          <div id="orders-empty" class="empty-state" hidden><span aria-hidden="true">◌</span><h2>Nenhuma ordem encontrada</h2><p>Altere os filtros ou cadastre uma nova ordem.</p></div>
+        </article>
+      </section>
+
+      <section id="view-clientes" class="view" aria-labelledby="clientes-title">
+        <div class="page-heading"><div><p class="eyebrow">RELACIONAMENTO</p><h1 id="clientes-title">Clientes</h1><p>Contatos, veículos e histórico de atendimento.</p></div><button class="button button-primary" type="button" data-open-dialog="cliente-dialog"><span aria-hidden="true">＋</span> Novo cliente</button></div>
+        <div id="clients-grid" class="entity-grid"></div>
+        <div id="clients-empty" class="empty-state panel" hidden><span aria-hidden="true">C</span><h2>Nenhum cliente encontrado</h2><p>Cadastre o primeiro cliente da oficina.</p></div>
+      </section>
+
+      <section id="view-veiculos" class="view" aria-labelledby="veiculos-title">
+        <div class="page-heading"><div><p class="eyebrow">GARAGEM</p><h1 id="veiculos-title">Veículos</h1><p>Veículos vinculados aos clientes da oficina.</p></div><button class="button button-primary" type="button" data-open-dialog="veiculo-dialog"><span aria-hidden="true">＋</span> Novo veículo</button></div>
+        <div id="vehicles-grid" class="entity-grid"></div>
+        <div id="vehicles-empty" class="empty-state panel" hidden><span aria-hidden="true">V</span><h2>Nenhum veículo encontrado</h2><p>Cadastre um cliente antes de adicionar o veículo.</p></div>
+      </section>
+    </main>
+  </div>
+
+  <dialog id="cliente-dialog" class="app-dialog">
+    <form id="cliente-form" method="dialog">
+      <div class="dialog-heading"><div><span class="section-kicker">CADASTRO</span><h2>Novo cliente</h2></div><button class="icon-button" type="button" data-close-dialog aria-label="Fechar">×</button></div>
+      <div class="form-grid">
+        <label class="field field-full"><span>Nome completo *</span><input name="nome" required autocomplete="name"></label>
+        <label class="field"><span>Telefone *</span><input name="telefone" required autocomplete="tel" placeholder="(85) 99999-9999"></label>
+        <label class="field"><span>E-mail</span><input name="email" type="email" autocomplete="email" placeholder="cliente@email.com"></label>
+      </div>
+      <div class="dialog-actions"><button class="button button-secondary" type="button" data-close-dialog>Cancelar</button><button class="button button-primary" type="submit">Salvar cliente</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="veiculo-dialog" class="app-dialog">
+    <form id="veiculo-form" method="dialog">
+      <div class="dialog-heading"><div><span class="section-kicker">GARAGEM</span><h2>Novo veículo</h2></div><button class="icon-button" type="button" data-close-dialog aria-label="Fechar">×</button></div>
+      <div class="form-grid">
+        <label class="field field-full"><span>Cliente *</span><select name="cliente_id" id="vehicle-client-select" required></select></label>
+        <label class="field"><span>Marca *</span><input name="marca" required placeholder="Toyota"></label>
+        <label class="field"><span>Modelo *</span><input name="modelo" required placeholder="Corolla"></label>
+        <label class="field"><span>Ano</span><input name="ano" type="number" min="1950" max="2100" placeholder="2020"></label>
+        <label class="field"><span>Placa *</span><input name="placa" required maxlength="8" placeholder="ABC-1D23"></label>
+        <label class="field field-full"><span>Cor</span><input name="cor" placeholder="Prata"></label>
+      </div>
+      <div class="dialog-actions"><button class="button button-secondary" type="button" data-close-dialog>Cancelar</button><button class="button button-primary" type="submit">Salvar veículo</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="ordem-dialog" class="app-dialog app-dialog-large">
+    <form id="ordem-form" method="dialog">
+      <div class="dialog-heading"><div><span class="section-kicker">ATENDIMENTO</span><h2>Nova ordem de serviço</h2></div><button class="icon-button" type="button" data-close-dialog aria-label="Fechar">×</button></div>
+      <div class="form-grid">
+        <label class="field field-full"><span>Veículo / cliente *</span><select name="veiculo_id" id="order-vehicle-select" required></select></label>
+        <label class="field"><span>Farol *</span><select name="farol" required><option>Dianteiro direito</option><option>Dianteiro esquerdo</option><option>Par dianteiro</option><option>Lanterna traseira</option></select></label>
+        <label class="field"><span>Serviço principal *</span><select name="servico" required><option>Polimento técnico</option><option>Troca de lente</option><option>Vedação e limpeza</option><option>Recuperação de LED</option><option>Diagnóstico elétrico</option></select></label>
+        <label class="field"><span>Previsão de entrega</span><input name="previsao" type="datetime-local"></label>
+        <label class="field"><span>Valor estimado</span><input name="valor" type="number" min="0" step="0.01" placeholder="0,00"></label>
+        <label class="field field-full"><span>Defeito relatado / observações</span><textarea name="defeito" rows="3" placeholder="Ex.: farol embaçando após chuva e iluminação fraca"></textarea></label>
+      </div>
+      <div class="dialog-actions"><button class="button button-secondary" type="button" data-close-dialog>Cancelar</button><button class="button button-primary" type="submit">Criar ordem</button></div>
+    </form>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <div id="loading-overlay" class="loading-overlay" aria-live="polite" hidden><span class="spinner"></span><span>Atualizando oficina...</span></div>
+</body>
+</html>
